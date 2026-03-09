@@ -1,0 +1,456 @@
+-- AUTO OXY URBAN Style GUI (clean base) - BUGOY MENU V2
+-- March 2025 style - white theme / modern flat
+
+local Players          = game:GetService("Players")
+local TweenService     = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local player    = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Simple instance creator
+local function new(class, props)
+    local obj = Instance.new(class)
+    if props then
+        for k, v in pairs(props) do
+            obj[k] = v
+        end
+    end
+    return obj
+end
+
+-- Click sound
+local clickSound = new("Sound", {
+    SoundId = "rbxassetid://315416964",
+    Volume = 0.5,
+    Parent = playerGui
+})
+
+-- Themes (you can expand later)
+local currentTheme = "WHITE"
+local themes = {
+    WHITE = {primary = Color3.fromRGB(0,0,0),   accent = Color3.fromRGB(50,50,50)},
+    RED   = {primary = Color3.fromRGB(0,0,0),   accent = Color3.fromRGB(255,50,50)},
+    BLUE  = {primary = Color3.fromRGB(0,0,0),   accent = Color3.fromRGB(50,150,255)},
+    GRAY  = {primary = Color3.fromRGB(0,0,0),   accent = Color3.fromRGB(200,200,200)},
+    PINK  = {primary = Color3.fromRGB(0,0,0),   accent = Color3.fromRGB(255,100,200)},
+}
+
+-- Main ScreenGui
+local screenGui = new("ScreenGui", {
+    Name = "BUGOY_GUI",
+    ResetOnSpawn = false,
+    DisplayOrder = 1000,
+    Parent = playerGui
+})
+
+-- Main Frame (centered)
+local main = new("Frame", {
+    Name = "MainFrame",
+    Size = UDim2.new(0, 860, 0, 520),
+    Position = UDim2.new(0.5, -430, 0.5, -260),
+    BackgroundColor3 = Color3.fromRGB(255,255,255),
+    BorderSizePixel = 0,
+    Parent = screenGui
+})
+main.ClipsDescendants = true
+new("UICorner", {CornerRadius = UDim.new(0,12), Parent = main})
+
+-- Draggable
+local dragging, dragInput, dragStart, startPos
+local function update(input)
+    local delta = input.Position - dragStart
+    main.Position = UDim2.new(
+        startPos.X.Scale, startPos.X.Offset + delta.X,
+        startPos.Y.Scale, startPos.Y.Offset + delta.Y
+    )
+end
+
+main.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = main.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+main.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+-- ────────────────────────────────────────────────────────────────
+-- Left Sidebar (avatar + info)
+-- ────────────────────────────────────────────────────────────────
+local leftPanel = new("Frame", {
+    Name = "LeftPanel",
+    Size = UDim2.new(0, 220, 1, 0),
+    BackgroundColor3 = Color3.fromRGB(255,255,255),
+    BorderSizePixel = 0,
+    Parent = main
+})
+new("UICorner", {CornerRadius = UDim.new(0,12), Parent = leftPanel})
+
+new("TextLabel", {
+    Parent = leftPanel,
+    BackgroundTransparency = 1,
+    Position = UDim2.new(0, 14, 0, 14),
+    Size = UDim2.new(1, -28, 0, 32),
+    Text = "BUGOY MENU V2",
+    Font = Enum.Font.GothamBlack,
+    TextSize = 25,
+    TextColor3 = Color3.fromRGB(0,0,0),
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+-- Avatar ring
+local avatarFrame = new("Frame", {
+    Parent = leftPanel,
+    BackgroundColor3 = Color3.fromRGB(255,255,255),
+    Size = UDim2.new(0, 100, 0, 100),
+    Position = UDim2.new(0.5, -50, 0, 60),
+    BorderSizePixel = 0,
+    ClipsDescendants = true
+})
+
+local ring = new("Frame", {
+    Parent = avatarFrame,
+    Size = UDim2.new(1,0,1,0),
+    BackgroundColor3 = Color3.fromRGB(255,255,255),
+    BorderSizePixel = 0
+})
+new("UICorner", {CornerRadius = UDim.new(1,0), Parent = ring})
+
+local inner = new("Frame", {
+    Parent = ring,
+    Size = UDim2.new(0.86,0,0.86,0),
+    Position = UDim2.new(0.07,0,0.07,0),
+    BackgroundColor3 = Color3.fromRGB(255,255,255),
+    BorderSizePixel = 0
+})
+new("UICorner", {CornerRadius = UDim.new(1,0), Parent = inner})
+
+new("ImageLabel", {
+    Parent = inner,
+    BackgroundTransparency = 1,
+    Size = UDim2.new(1,0,1,0),
+    Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150),
+})
+new("UICorner", {CornerRadius = UDim.new(1,0), Parent = inner})
+
+new("TextLabel", {
+    Parent = leftPanel,
+    BackgroundTransparency = 1,
+    Position = UDim2.new(0, 0, 0, 170),
+    Size = UDim2.new(1, 0, 0, 28),
+    Text = player.DisplayName,
+    Font = Enum.Font.GothamBold,
+    TextSize = 16,
+    TextColor3 = Color3.fromRGB(0,0,0),
+    TextXAlignment = Enum.TextXAlignment.Center,
+})
+
+new("TextLabel", {
+    Parent = leftPanel,
+    BackgroundTransparency = 1,
+    Position = UDim2.new(0, 0, 0, 194),
+    Size = UDim2.new(1, 0, 0, 20),
+    Text = "@" .. player.Name,
+    Font = Enum.Font.Gotham,
+    TextSize = 13,
+    TextColor3 = Color3.fromRGB(0,0,0),
+    TextXAlignment = Enum.TextXAlignment.Center,
+})
+
+-- Socials
+new("TextLabel", {
+    Parent = leftPanel,
+    BackgroundTransparency = 1,
+    Position = UDim2.new(0, 0, 0, 310),
+    Size = UDim2.new(1, 0, 0, 120),
+    Text = "@theyluvbugoy\n\ndiscord.gg/ewhxdTTE\n\n@iluvmonz tiktok\n\n@iluvmonz youtube",
+    Font = Enum.Font.Gotham,
+    TextSize = 12,
+    TextColor3 = Color3.fromRGB(0,0,0),
+    TextXAlignment = Enum.TextXAlignment.Center,
+    TextYAlignment = Enum.TextYAlignment.Top,
+    TextWrapped = true,
+})
+
+-- ────────────────────────────────────────────────────────────────
+-- Right content area + tab system
+-- ────────────────────────────────────────────────────────────────
+local rightPanel = new("Frame", {
+    Name = "RightPanel",
+    Parent = main,
+    Size = UDim2.new(1, -220, 1, -50),
+    Position = UDim2.new(0, 220, 0, 0),
+    BackgroundColor3 = Color3.fromRGB(255,255,255),
+    BorderSizePixel = 0
+})
+new("UICorner", {CornerRadius = UDim.new(0,12), Parent = rightPanel})
+
+local titleLabel = new("TextLabel", {
+    Parent = rightPanel,
+    Position = UDim2.new(0, 16, 0, 12),
+    Size = UDim2.new(1, -32, 0, 32),
+    BackgroundTransparency = 1,
+    Text = "MAIN MENU",
+    Font = Enum.Font.GothamBold,
+    TextSize = 20,
+    TextColor3 = Color3.fromRGB(0,0,0),
+    TextXAlignment = Enum.TextXAlignment.Left,
+})
+
+local tabBar = new("ScrollingFrame", {
+    Parent = rightPanel,
+    Position = UDim2.new(0, 16, 0, 56),
+    Size = UDim2.new(1, -32, 0, 44),
+    BackgroundColor3 = Color3.fromRGB(255,255,255),
+    BorderSizePixel = 0,
+    ScrollBarThickness = 6,
+    ScrollBarImageColor3 = Color3.fromRGB(200,200,200),
+    CanvasSize = UDim2.new(0,0,0,0),
+    ScrollingDirection = Enum.ScrollingDirection.X,
+    AutomaticCanvasSize = Enum.AutomaticSize.X
+})
+new("UICorner", {CornerRadius = UDim.new(0,8), Parent = tabBar})
+
+new("UIListLayout", {
+    Parent = tabBar,
+    FillDirection = Enum.FillDirection.Horizontal,
+    Padding = UDim.new(0, 8),
+    SortOrder = Enum.SortOrder.LayoutOrder
+})
+
+local contentArea = new("Frame", {
+    Parent = rightPanel,
+    Position = UDim2.new(0, 16, 0, 108),
+    Size = UDim2.new(1, -32, 1, -166),
+    BackgroundTransparency = 1,
+    ClipsDescendants = true
+})
+
+-- Bottom bar tabs
+local bottomBar = new("Frame", {
+    Parent = main,
+    Position = UDim2.new(0, 220, 1, -50),
+    Size = UDim2.new(1, -220, 0, 50),
+    BackgroundColor3 = Color3.fromRGB(255,255,255),
+    BorderSizePixel = 0
+})
+new("UICorner", {CornerRadius = UDim.new(0,12), Parent = bottomBar})
+
+local allTabButtons = {}
+local allTabPanels = {}
+local currentTab = "MAIN MENU"
+
+local function showTab(name)
+    if currentTab == name then return end
+
+    if allTabPanels[currentTab] then
+        allTabPanels[currentTab].Visible = false
+    end
+
+    currentTab = name
+    titleLabel.Text = name
+
+    if allTabPanels[name] then
+        allTabPanels[name].Visible = true
+    end
+
+    local t = themes[currentTheme]
+    for _, obj in ipairs(screenGui:GetDescendants()) do
+        if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+            obj.TextColor3 = t.primary
+        end
+    end
+
+    for _, btn in ipairs(allTabButtons) do
+        if currentTab == btn.Text then
+            btn.BackgroundColor3 = Color3.fromRGB(220,220,220)
+        else
+            btn.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        end
+    end
+end
+
+-- ────────────────────────────────────────────────────────────────
+-- Create top tabs
+-- ────────────────────────────────────────────────────────────────
+local topTabNames = {
+    "MAIN MENU", "ROLEPLAY MENU", "ROLEPLAY MENU 2", "LATEST SCRIPT",
+    "BRING MENU", "AIMBOT MENU", "SCRIPT MENU", "CASH MENU", "PLAYER MENU",
+    "BUGOY MENU", "THE BILLIONARE", "RP TELEPORT", "ADMIN PANEL", "REMOTES"
+}
+
+local function createTopTab(name)
+    local btn = new("TextButton", {
+        Parent = tabBar,
+        Size = UDim2.new(0, 110, 1, -12),
+        BackgroundColor3 = Color3.fromRGB(255,255,255),
+        Text = name,
+        Font = Enum.Font.GothamSemibold,
+        TextSize = 13,
+        TextColor3 = Color3.fromRGB(0,0,0),
+        AutoButtonColor = false,
+        TextXAlignment = Enum.TextXAlignment.Center,
+    })
+    new("UICorner", {CornerRadius = UDim.new(0,6), Parent = btn})
+
+    btn.MouseEnter:Connect(function()
+        if currentTab ~= name then
+            TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(245,245,245)}):Play()
+        end
+    end)
+
+    btn.MouseLeave:Connect(function()
+        if currentTab ~= name then
+            TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(255,255,255)}):Play()
+        end
+    end)
+
+    btn.MouseButton1Click:Connect(function()
+        clickSound:Play()
+        showTab(name)
+    end)
+
+    local panel = new("ScrollingFrame", {
+        Parent = contentArea,
+        Size = UDim2.new(1,0,1,0),
+        BackgroundTransparency = 1,
+        Visible = false,
+        ScrollBarThickness = 6,
+        ScrollBarImageColor3 = Color3.fromRGB(200,200,200),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+    })
+    new("UIListLayout", {Parent = panel, Padding = UDim.new(0,8)})
+
+    allTabPanels[name] = panel
+    table.insert(allTabButtons, btn)
+
+    return panel
+end
+
+for _, name in ipairs(topTabNames) do
+    createTopTab(name)
+end
+
+-- ────────────────────────────────────────────────────────────────
+-- Bottom tabs (centered)
+-- ────────────────────────────────────────────────────────────────
+local bottomTabs = {"PLAYER LIST", "SETTINGS", "LUA EXECUTOR"}
+
+local function createBottomTab(name)
+    local btn = new("TextButton", {
+        Parent = bottomBar,
+        Size = UDim2.new(0, 140, 1, -16),
+        BackgroundColor3 = Color3.fromRGB(255,255,255),
+        Text = name,
+        Font = Enum.Font.GothamSemibold,
+        TextSize = 14,
+        TextColor3 = Color3.fromRGB(0,0,0),
+        AutoButtonColor = false,
+    })
+    new("UICorner", {CornerRadius = UDim.new(0,6), Parent = btn})
+
+    local function positionButton()
+        local totalWidth = #bottomTabs * 140 + (#bottomTabs-1) * 16
+        local startX = (bottomBar.AbsoluteSize.X - totalWidth) / 2
+        btn.Position = UDim2.new(0, startX + (table.find(bottomTabs, name)-1)*(140+16), 0, 8)
+    end
+
+    task.delay(0, positionButton)
+    bottomBar:GetPropertyChangedSignal("AbsoluteSize"):Connect(positionButton)
+
+    btn.MouseButton1Click:Connect(function()
+        clickSound:Play()
+        showTab(name)
+    end)
+
+    local panel = new("ScrollingFrame", {
+        Parent = contentArea,
+        Size = UDim2.new(1,0,1,0),
+        BackgroundTransparency = 1,
+        Visible = false,
+        ScrollBarThickness = 6,
+        ScrollBarImageColor3 = Color3.fromRGB(200,200,200),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+    })
+    new("UIListLayout", {Parent = panel, Padding = UDim.new(0,8)})
+
+    allTabPanels[name] = panel
+    table.insert(allTabButtons, btn)
+
+    return panel
+end
+
+for _, name in ipairs(bottomTabs) do
+    createBottomTab(name)
+end
+
+-- Initial tab
+if allTabButtons[1] then
+    allTabButtons[1].BackgroundColor3 = Color3.fromRGB(220,220,220)
+end
+showTab("MAIN MENU")
+
+-- ────────────────────────────────────────────────────────────────
+-- Add buttons to MAIN MENU tab example
+-- ────────────────────────────────────────────────────────────────
+local mainPanel = allTabPanels["MAIN MENU"]
+
+local function addMainMenuButton(text, callback)
+    local btn = new("TextButton", {
+        Size = UDim2.new(1, -16, 0, 38),
+        BackgroundColor3 = Color3.fromRGB(255,255,255),
+        TextColor3 = Color3.fromRGB(0,0,0),
+        Font = Enum.Font.GothamSemibold,
+        TextSize = 14,
+        Text = text,
+        AutoButtonColor = false,
+        Parent = mainPanel,
+    })
+    new("UICorner", {CornerRadius = UDim.new(0,6), Parent = btn})
+
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(245,245,245)}):Play()
+    end)
+
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(255,255,255)}):Play()
+    end)
+
+    btn.MouseButton1Click:Connect(function()
+        clickSound:Play()
+        if callback then callback() end
+    end)
+end
+
+-- Example buttons (add your own scripts here)
+addMainMenuButton("Infinite Yield", function()
+    -- loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+end)
+
+addMainMenuButton("Your Script Here", function()
+    -- paste code
+end)
+
+addMainMenuButton("Another Feature", function()
+    -- paste code
+end)
+
+print("AUTO OXY URBAN base GUI loaded")
